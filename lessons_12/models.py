@@ -38,15 +38,27 @@ class Address(Base):
     user = relationship("User", back_populates="addresses")
 
 
-
-
-class Product_list(Base):
-    __tablename__ = "product_list"
-    id = Column(Integer, primary_key=True, )
+class Product(Base):
+    __tablename__ = "product"
+    id = Column(Integer, primary_key=True)
     name = Column(String)
     price = Column(Integer)
-    amount = Column(Integer)
+    ammount = Column(Integer)
     comment = Column(String)
+
+    purchases = relationship("Purchase", back_populates="product")
+
+class Purchase(Base):
+    __tablename__ = "purchase"
+    id = Column(Integer, primary_key=True)
+    user_id = Column(ForeignKey("user.id"))
+    product_id = Column(ForeignKey("product.id"))
+    ammount = Column(Integer)
+
+    product = relationship("Product", back_populates="purchases")
+
+
+
 
 
 

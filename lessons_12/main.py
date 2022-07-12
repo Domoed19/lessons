@@ -1,56 +1,96 @@
 from sqlalchemy.orm import sessionmaker, Session
 
-from models import Base, User, Profile, Address, Product_list
+from models import Base, User, Profile, Address, Product, Purchase
 from utils import setup_db_engine, create_database_if_not_exists
 
-# def create_user(
-#         session: Session, email: str, password: str, phone: str, age: int, city:str, address: str
-# ) -> User:
-#
-#     user = User(email=email, password=password)
-#     profile = Profile(user=user, phone=phone, age=age)
-#     address = Address(user=user, city=city, address=address)
-#
-#     session.add_all([user, profile, address])
-#     session.commit()
-#
-#     return user
-# def update_or_create(session: Session, user: User, city: str, address: str) -> Address:
-#     if len(user.addresses):
-#         current_address = user.addresses[0]
-#         current_address.city = city
-#         current_address.address = address
-#     else:
-#         address = Address(user=user, city=city, address=address)
-#
-#     session.add_all([user, address])
-#     session.commit()
-#
-#     return address
+engine = setup_db_engine()
+create_database_if_not_exists(engine=engine)
+Base.metadata.create_all(engine)
+CurrentSession = sessionmaker(bind=engine)
+current_session = CurrentSession()
+def create_user(
+        session: Session, email: str, password: str, phone: str, age: int, city:str, address: str
+) -> User:
 
+    user = User(email=email, password=password)
+    profile = Profile(user=user, phone=phone, age=age)
+    address = Address(user=user, city=city, address=address)
 
-# def create_product_list(
-#         session: Session, name: str, price: int, amount: int, comment: str
-# ) -> Product_list:
-#     product_list = Product_list(name=name, price=price, amount=amount, comment=comment)
-#
-#     session.add(product_list)
-#     session.commit()
-
-def update(session: Session, name: str, price: int, amount: int, comment: str) -> Product_list:
-    current_id = product_list.amount
-    session.add(product_list)
+    session.add_all([user, profile, address])
     session.commit()
 
+    return user
+def update_or_create(session: Session, user: User, city: str, address: str) -> Address:
+    if len(user.addresses):
+        current_address = user.addresses[0]
+        current_address.city = city
+        current_address.address = address
+    else:
+        address = Address(user=user, city=city, address=address)
+
+    session.add_all([user, address])
+    session.commit()
+
+    return address
 
 
-if __name__ == "__main__":
-    engine = setup_db_engine()
-    create_database_if_not_exists(engine=engine)
+def create_product_list(
+    session: Session, name: str, price: int, ammount:int, comment: str
+) -> Product:
+    product = Product(name=name, price=price, ammount=ammount, comment=comment)
 
-    Base.metadata.create_all(engine)
-    CurrentSession = sessionmaker(bind=engine)
-    current_session = CurrentSession()
+    session.add(product)
+    session.commit()
+
+    return product
+
+def get_product_list(session: Session) -> Product:
+    print(
+        session.query(Product.id, Product.name, Product.price, Product.ammount, Product.comment).all()
+    )
+def update_prod(session: Session,id:int, name:str, price:int) -> Product:
+    upd = session.query(Product).filter_by(id=id).update({"name": name, "price":price})
+    session.commit()
+
+def del_prod(session: Session,id:int) -> Product:
+    dell = session.query(Product).filter_by(id=id).delete()
+    session.commit()
+
+def buying (session: Session, id:int, product_id: int,user_id:int, ammount: int) -> Purchase:
+    purchacse = Purchase(id=id, product_id=product_id, user_id=user_id, ammount=ammount)
+    session.commit()
+
+    return purchacse
+
+def all_buying(session: Session) -> Purchase:
+    purchase = session.query(Purchase).filter_by(user_id=user_id).all
+    return purchase
+
+def purchase_filtration (session: Session) -> Purchase:
+    if session.query(Purchase).filter(Purchse.ammount > 2):
+        print("3-я в подарок")
+    else:
+        print("Подарка нет")
+
+# if __name__ == "__main__":
+#     engine = setup_db_engine()
+#     create_database_if_not_exists(engine=engine)
+#
+#     Base.metadata.create_all(engine)
+#     CurrentSession = sessionmaker(bind=engine)
+#     current_session = CurrentSession()
+#
+#     get_pr = get_product_list(session=current_session)
+#     update = update_prod(
+#         session=current_session,
+#         id= 2,
+#         name= "Laptop",
+#         price= 1500
+#     )
+#     dele = del_prod(
+#         session=current_session,
+#         id= 3,
+#         )
 
     # new_user = create_user(
     #     session=current_session,
@@ -81,7 +121,7 @@ if __name__ == "__main__":
     #     session=current_session,
     #     name="Xbox",
     #     price=1500,
-    #     amount=1,
+    #     ammount=1,
     #     comment="Есть на складе"
     # )
     #
@@ -89,7 +129,7 @@ if __name__ == "__main__":
     #     session=current_session,
     #     name="Iphone11",
     #     price=1600,
-    #     amount=12,
+    #     ammount=12,
     #     comment="Есть на складе"
     # )
     #
@@ -97,7 +137,7 @@ if __name__ == "__main__":
     #     session=current_session,
     #     name="Samsung TV",
     #     price=2100,
-    #     amount=18,
+    #     ammount=18,
     #     comment="Есть на складе"
     # )
     #
@@ -105,11 +145,9 @@ if __name__ == "__main__":
     #     session=current_session,
     #     name="Microwave LG",
     #     price=700,
-    #     amount=1,
+    #     ammount=1,
     #     comment="Товар отсутствует"
     # )
-
-
 
 
 
